@@ -9,6 +9,18 @@
   --color-cc-muted: #a3a3a3;
   --color-cc-decoration: #0d1f22;
   --font-sans: 'Prompt', system-ui, sans-serif;
+
+  /* Escala tipográfica do Figma (Prompt, line-height 1.5). */
+  --text-cc-title: 31px;
+  --text-cc-title--line-height: 1.5;
+  --text-cc-lg: 22px;
+  --text-cc-lg--line-height: 1.5;
+  --text-cc-base: 18px;
+  --text-cc-base--line-height: 1.5;
+  --text-cc-sm: 15px;
+  --text-cc-sm--line-height: 1.5;
+  --text-cc-xs: 12.5px;
+  --text-cc-xs--line-height: 1.5;
 }
 
 body {

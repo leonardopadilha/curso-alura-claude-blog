@@ -11,7 +11,7 @@ export function FormField({ label, id, ...props }: FormFieldProps) {
   const inputId = id ?? generatedId
 
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-2">
       <Label htmlFor={inputId}>{label}</Label>
       <Input id={inputId} {...props} />
     </div>

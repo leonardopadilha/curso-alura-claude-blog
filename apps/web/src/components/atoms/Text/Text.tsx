@@ -1,13 +1,17 @@
 import type { ComponentProps } from 'react'
 
 type TextProps = ComponentProps<'p'> & {
-  size?: 'xs' | 'sm'
+  size?: 'sm' | 'base' | 'lg'
 }
 
-const sizes = { xs: 'text-xs', sm: 'text-sm' } as const
+const sizes = {
+  sm: 'text-cc-sm',
+  base: 'text-cc-base',
+  lg: 'text-cc-lg',
+} as const
 
 export function Text({
-  size = 'sm',
+  size = 'base',
   className = '',
   ...props
 }: TextProps) {

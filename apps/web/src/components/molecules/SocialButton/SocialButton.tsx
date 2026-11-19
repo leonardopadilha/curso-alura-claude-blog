@@ -9,10 +9,10 @@ export function SocialButton({ icon, label, ...props }: SocialButtonProps) {
   return (
     <button
       type="button"
-      className="flex cursor-pointer flex-col items-center gap-1 text-[10px] text-cc-text hover:opacity-80"
+      className="flex cursor-pointer flex-col items-center gap-1 text-cc-xs text-cc-text hover:opacity-80"
       {...props}
     >
-      <span className="size-6">{icon}</span>
+      {icon}
       {label}
     </button>
   )

@@ -17,7 +17,7 @@ export function LoginPage() {
             question="Ainda não tem conta?"
             linkLabel="Crie seu cadastro!"
             to="/cadastro"
-            icon={<ClipboardIcon className="size-3.5" />}
+            icon={<ClipboardIcon className="size-6" />}
           />
         </>
       }

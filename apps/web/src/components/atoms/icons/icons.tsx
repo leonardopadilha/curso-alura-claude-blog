@@ -58,6 +58,14 @@ export function ClipboardIcon(props: IconProps) {
   )
 }
 
+export function LoginIcon(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
+      <path d="m11 7-1.4 1.4 2.6 2.6H2v2h10.2l-2.6 2.6L11 17l5-5-5-5Zm9 12h-8v2h8a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-8v2h8v14Z" />
+    </svg>
+  )
+}
+
 /** Elo do logo usado como marca d'água no fundo das telas de autenticação. */
 export function ChainLinkDecoration(props: IconProps) {
   return (

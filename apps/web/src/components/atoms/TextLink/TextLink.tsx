@@ -6,8 +6,8 @@ type TextLinkProps = ComponentProps<typeof Link> & {
 }
 
 const variants = {
-  underline: 'text-cc-text underline',
-  accent: 'text-cc-accent font-medium',
+  underline: 'text-cc-sm text-cc-text underline',
+  accent: 'text-cc-base text-cc-accent',
 } as const
 
 export function TextLink({
@@ -17,7 +17,7 @@ export function TextLink({
 }: TextLinkProps) {
   return (
     <Link
-      className={`inline-flex items-center gap-1.5 text-xs ${variants[variant]} ${className}`}
+      className={`inline-flex items-center gap-3 ${variants[variant]} ${className}`}
       {...props}
     />
   )

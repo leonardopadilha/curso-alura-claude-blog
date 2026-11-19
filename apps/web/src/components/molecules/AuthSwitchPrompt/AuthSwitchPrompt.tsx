@@ -7,17 +7,25 @@ type AuthSwitchPromptProps = {
   linkLabel: string
   to: string
   icon?: ReactNode
+  /** `stacked`: pergunta acima do link, centralizados. `inline`: pergunta e link na mesma linha. */
+  layout?: 'stacked' | 'inline'
 }
+
+const layouts = {
+  stacked: 'flex-col items-center',
+  inline: 'items-center',
+} as const
 
 export function AuthSwitchPrompt({
   question,
   linkLabel,
   to,
   icon,
+  layout = 'stacked',
 }: AuthSwitchPromptProps) {
   return (
-    <div className="flex flex-col items-center gap-2">
-      <Text size="xs">{question}</Text>
+    <div className={`flex gap-2 ${layouts[layout]}`}>
+      <Text size={layout === 'inline' ? 'base' : 'sm'}>{question}</Text>
       <TextLink to={to} variant="accent">
         {linkLabel}
         {icon}

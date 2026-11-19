@@ -11,7 +11,7 @@ export function Heading({
 }: HeadingProps) {
   return (
     <Tag
-      className={`text-xl font-semibold text-cc-text ${className}`}
+      className={`text-cc-title font-semibold text-cc-text ${className}`}
       {...props}
     />
   )
