@@ -23,6 +23,6 @@ describe('TextLink', () => {
         </TextLink>
       </MemoryRouter>,
     )
-    expect(screen.getByRole('link')).toHaveClass('text-cc-accent')
+    expect(screen.getByRole('link')).toHaveClass('text-verde-destaque')
   })
 })

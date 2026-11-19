@@ -6,3 +6,5 @@ dist
 *.log
 .DS_Store
 .idea
+apps/web/e2e/.results
+apps/web/e2e/.report

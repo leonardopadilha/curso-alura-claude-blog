@@ -5,9 +5,9 @@ type TextProps = ComponentProps<'p'> & {
 }
 
 const sizes = {
-  sm: 'text-cc-sm',
-  base: 'text-cc-base',
-  lg: 'text-cc-lg',
+  sm: 'text-base',
+  base: 'text-lg',
+  lg: 'text-xl',
 } as const
 
 export function Text({
@@ -16,6 +16,6 @@ export function Text({
   ...props
 }: TextProps) {
   return (
-    <p className={`${sizes[size]} text-cc-text ${className}`} {...props} />
+    <p className={`${sizes[size]} text-offwhite ${className}`} {...props} />
   )
 }

@@ -12,6 +12,7 @@
     "start:api": "pnpm --filter api start:prod",
     "test:api": "pnpm --filter api test",
     "test:web": "pnpm --filter web test",
+    "test:a11y": "pnpm --filter web test:a11y",
     "dev": "pnpm --parallel --filter web --filter api --stream run \"/^(dev|start:dev)$/\"",
     "build": "pnpm -r build"
   }

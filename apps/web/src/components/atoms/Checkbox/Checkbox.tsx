@@ -14,14 +14,14 @@ export function Checkbox({ label, id, className = '', ...props }: CheckboxProps)
         <input
           id={inputId}
           type="checkbox"
-          className="peer size-full cursor-pointer appearance-none rounded-sm border-2 border-cc-input bg-transparent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cc-accent"
+          className="peer size-full cursor-pointer appearance-none rounded-sm border-2 border-cinza-medio bg-transparent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-verde-destaque"
           {...props}
         />
         <svg
           viewBox="0 0 16 16"
           fill="currentColor"
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 hidden size-full p-1 text-cc-accent peer-checked:block"
+          className="pointer-events-none absolute inset-0 hidden size-full p-1 text-verde-destaque peer-checked:block"
         >
           <path
             fillRule="evenodd"
@@ -30,7 +30,7 @@ export function Checkbox({ label, id, className = '', ...props }: CheckboxProps)
           />
         </svg>
       </span>
-      <label htmlFor={inputId} className="cursor-pointer text-cc-sm text-cc-input">
+      <label htmlFor={inputId} className="cursor-pointer text-base text-cinza-medio">
         {label}
       </label>
     </div>

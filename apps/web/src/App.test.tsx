@@ -3,21 +3,21 @@ import { MemoryRouter } from 'react-router'
 import App from './App'
 
 describe('App', () => {
-  it('redirects unknown routes to the login page', () => {
+  it('redirects unknown routes to the login page', async () => {
     render(
       <MemoryRouter initialEntries={['/qualquer-coisa']}>
         <App />
       </MemoryRouter>,
     )
-    expect(screen.getByRole('heading', { name: 'Login' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Login' })).toBeInTheDocument()
   })
 
-  it('renders the signup page on /cadastro', () => {
+  it('renders the signup page on /cadastro', async () => {
     render(
       <MemoryRouter initialEntries={['/cadastro']}>
         <App />
       </MemoryRouter>,
     )
-    expect(screen.getByRole('heading', { name: 'Cadastro' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Cadastro' })).toBeInTheDocument()
   })
 })

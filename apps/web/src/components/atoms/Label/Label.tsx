@@ -6,7 +6,7 @@ export function Label({
   ...props
 }: ComponentProps<'label'>) {
   return (
-    <label className={`text-cc-base text-cc-text ${className}`} {...props}>
+    <label className={`text-lg text-offwhite ${className}`} {...props}>
       {children}
     </label>
   )

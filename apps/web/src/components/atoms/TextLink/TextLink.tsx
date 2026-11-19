@@ -6,8 +6,8 @@ type TextLinkProps = ComponentProps<typeof Link> & {
 }
 
 const variants = {
-  underline: 'text-cc-sm text-cc-text underline',
-  accent: 'text-cc-base text-cc-accent',
+  underline: 'text-base text-offwhite underline',
+  accent: 'text-lg text-verde-destaque',
 } as const
 
 export function TextLink({

@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 pnpm workspace monorepo (`apps/*`) with two independent apps:
 
 - `apps/api` — NestJS 12 backend (ESM, Vitest, oxlint with type-aware rules, Prettier). Currently the default scaffold (`AppModule` / `AppController` / `AppService`); listens on `PORT` or 3000.
-- `apps/web` — React 19 + Vite 8 + TypeScript frontend (oxlint). Currently the default Vite template.
+- `apps/web` — React 19 + Vite 8 + TypeScript frontend (oxlint, Vitest). Has the login (`/login`) and signup (`/cadastro`) pages, built from the Figma design.
 
 There is no shared package and no wiring between web and api yet.
 
@@ -35,7 +35,7 @@ pnpm format                                     # prettier
 pnpm start:prod                                 # node dist/main
 ```
 
-The web app has no test runner configured.
+Web tests: `pnpm test:web` (Vitest + Testing Library, `*.test.tsx` colocated with components).
 
 ## API conventions (apps/api)
 
@@ -61,7 +61,9 @@ All HTTP endpoints must follow REST principles:
 
 - **Atomic Design:** organize components under `src/components/` as `atoms/`, `molecules/`, `organisms/`, `templates/` and `pages/`. Atoms are indivisible UI elements (Button, Input); molecules combine atoms; organisms combine molecules/atoms into sections; templates define page layout; pages bind templates to data. Dependencies only flow downward (an atom never imports a molecule).
 - **Tailwind CSS** is the styling approach; use utility classes in components rather than custom CSS files.
-- **Every component must have a test** covering its essential use (renders, main props, primary interaction), colocated next to the component (e.g. `Button.test.tsx`). The web app has no test runner yet, so add one (Vitest + Testing Library, matching the API's Vitest) and a `test` script together with the first component. A component without a test is not done.
+- **Font sizes:** use Tailwind's default type scale (`text-xs`, `text-sm`, `text-base`, `text-lg`, `text-xl`, `text-3xl`...). When the design (Figma) has a size with no exact token, pick the closest default token instead of customizing: no `text-[15px]` arbitrary values and no custom `--text-*` theme tokens.
+- **Colors:** never hardcode hex values in classes (`bg-[#171d1f]`) or inline styles. Colors come from the project palette declared in `@theme` in `src/index.css` (Tailwind v4 CSS-first config, extending the default palette) and are used through utilities such as `bg-grafite` and `text-offwhite`. The palette follows the Figma color names: `grafite` (#00090e), `cinza-escuro` (#171d1f), `cinza-medio` (#888888), `offwhite` (#e1e1e1), `verde-petroleo` (#132e35), `verde-destaque` (#81fe88), plus `decoracao` (#0d1f22, background decoration). A new color from the design is added to the `@theme` palette first, then used by name. Exception: third-party brand colors inside SVGs (e.g. the Google logo in `GoogleIcon`).
+- **Every component must have a test** covering its essential use (renders, main props, primary interaction), colocated next to the component (e.g. `Button.test.tsx`). Tests use Vitest + Testing Library (`pnpm test:web`). A component without a test is not done.
 
 ## Git
 
