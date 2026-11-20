@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 pnpm workspace monorepo (`apps/*`) with two independent apps:
 
-- `apps/api` — NestJS 12 backend (ESM, Vitest, oxlint with type-aware rules, Prettier). Currently the default scaffold (`AppModule` / `AppController` / `AppService`); listens on `PORT` or 3000.
+- `apps/api` — NestJS 12 backend (ESM, Vitest, oxlint with type-aware rules, Prettier). Has `users` and `auth` modules (sign-up, login with JWT, current user) backed by an in-memory array; listens on `PORT` or 3000, routes under `/v1`, Swagger UI at `/docs`.
 - `apps/web` — React 19 + Vite 8 + TypeScript frontend (oxlint, Vitest). Has the login (`/login`) and signup (`/cadastro`) pages, built from the Figma design.
 
 There is no shared package and no wiring between web and api yet.
@@ -44,6 +44,10 @@ Web tests: `pnpm test:web` (Vitest + Testing Library, `*.test.tsx` colocated wit
 - Lint uses `oxlint --type-aware`; `typescript/no-floating-promises` is an error.
 - Vitest uses `globals: true` and resolves tsconfig path aliases via `resolve.tsconfigPaths`.
 - Telemetry via NestJS Observe is not yet registered in `app.module.ts` (see AGENTS.md).
+- **Auth** uses first-party `@nestjs/authentication`: `AuthenticationModule` registers a global guard, so every route requires a JWT unless marked `@Public()`. `JwtAuth` (a `JwtBearerProvider`) loads the user from the token; read it with `@CurrentUser()`. Only access tokens are issued (`refreshToken: false`, 15 min). `JWT_SECRET` (min. 32 bytes) is required in production; outside it a random per-process secret is used.
+- **Persistence is an in-memory array** inside `UsersService` (lost on restart; no ORM/database yet). Passwords are hashed with `PasswordHasher` (scrypt) and never leave the service: responses go through `toUserResponse`.
+- **Zod schemas are the single source of truth** for validation (`@Body({ schema })`) and OpenAPI: request/response schemas feed `@nestjs/swagger` (`standardSchema` on `@ApiXResponse`). Every endpoint needs its inputs and outputs documented that way. `setupApp()` (`app.setup.ts`) holds the global prefix, pipe and Swagger, and is shared by `main.ts` and the e2e tests.
+- E2E tests (`pnpm test:e2e`, `test/*.e2e-spec.ts`) use `setupApp` and override `PasswordHasher` with a cheap `new PasswordHasher({ logN: 10 })`.
 
 ## REST (apps/api)
 
