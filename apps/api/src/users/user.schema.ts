@@ -1,19 +1,20 @@
 import { z } from 'zod';
+import { requiredError } from '../common/zod.js';
 import type { User } from './user.js';
 
 export const createUserSchema = z.object({
   name: z
-    .string()
+    .string({ error: requiredError })
     .trim()
     .min(1)
     .max(100)
     .meta({ description: 'Nome completo', example: 'Ana Souza' }),
-  email: z.email().meta({
+  email: z.email({ error: requiredError }).meta({
     description: 'Email do usuário (único, sem diferenciar maiúsculas)',
     example: 'ana@exemplo.com',
   }),
   password: z
-    .string()
+    .string({ error: requiredError })
     .min(8)
     .max(128)
     .meta({ description: 'Senha (mínimo de 8 caracteres)', example: 'segredo123' }),

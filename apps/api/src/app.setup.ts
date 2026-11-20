@@ -12,8 +12,12 @@ export function setupApp(app: INestApplication): void {
     .setTitle('Code Connect API')
     .setDescription('Cadastro, login (JWT) e dados do usuário logado.')
     .setVersion('1.0')
+    // URL base exibida no topo do Swagger UI; cada rota aparece sem o prefixo.
+    .addServer(`http://localhost:${process.env.PORT ?? 3000}/${API_PREFIX}`, 'Local')
     .addBearerAuth()
     .build();
   // Documentação em /docs (JSON em /docs-json), fora do prefixo da API.
-  SwaggerModule.setup('docs', app, () => SwaggerModule.createDocument(app, config));
+  SwaggerModule.setup('docs', app, () =>
+    SwaggerModule.createDocument(app, config, { ignoreGlobalPrefix: true }),
+  );
 }

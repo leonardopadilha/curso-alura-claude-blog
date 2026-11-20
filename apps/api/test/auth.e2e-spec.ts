@@ -51,6 +51,25 @@ describe('Users and auth (e2e)', () => {
       expect(response.body).toMatchObject({ statusCode: 409 });
     });
 
+    it('reports every missing field as required, not as "undefined"', async () => {
+      const response = await register({}).expect(400);
+
+      expect(response.body.message).toEqual([
+        'name: Field is required',
+        'email: Field is required',
+        'password: Field is required',
+      ]);
+    });
+
+    it('keeps the specific message when a field is present but invalid', async () => {
+      const response = await register({ ...ana, email: 'nao-e-email', password: '123' }).expect(400);
+
+      expect(response.body.message).toEqual([
+        'email: Invalid email address',
+        expect.stringMatching(/^password: .*>=8 characters/),
+      ]);
+    });
+
     it.each([
       ['a missing name', { ...ana, name: undefined }],
       ['an invalid email', { ...ana, email: 'nao-e-email' }],
@@ -87,8 +106,13 @@ describe('Users and auth (e2e)', () => {
       expect(wrongPassword.body).toEqual(unknownEmail.body);
     });
 
-    it('returns 400 for a malformed body', async () => {
-      await login({ email: 'nao-e-email' }).expect(400);
+    it('returns 400 for a malformed body, flagging missing fields as required', async () => {
+      const response = await login({ email: 'nao-e-email' }).expect(400);
+
+      expect(response.body.message).toEqual([
+        'email: Invalid email address',
+        'password: Field is required',
+      ]);
     });
   });
 
@@ -128,19 +152,21 @@ describe('Users and auth (e2e)', () => {
     it('documents the three endpoints with their inputs and outputs', async () => {
       const { body: doc } = await request(app.getHttpServer()).get('/docs-json').expect(200);
 
+      // A URL base (com o prefixo /v1) vem de `servers`; as rotas aparecem sem ele.
+      expect(doc.servers[0].url).toMatch(/^http:\/\/localhost:\d+\/v1$/);
       expect(Object.keys(doc.paths)).toEqual(
-        expect.arrayContaining(['/v1/users', '/v1/auth/token', '/v1/users/me']),
+        expect.arrayContaining(['/users', '/auth/token', '/users/me']),
       );
 
-      const create = doc.paths['/v1/users'].post;
+      const create = doc.paths['/users'].post;
       expect(create.requestBody.content['application/json'].schema.properties).toHaveProperty('password');
       expect(Object.keys(create.responses)).toEqual(expect.arrayContaining(['201', '400', '409']));
 
-      const token = doc.paths['/v1/auth/token'].post;
+      const token = doc.paths['/auth/token'].post;
       expect(token.requestBody.content['application/json'].schema.properties).toHaveProperty('email');
       expect(token.responses['200'].content['application/json'].schema.properties).toHaveProperty('accessToken');
 
-      const me = doc.paths['/v1/users/me'].get;
+      const me = doc.paths['/users/me'].get;
       expect(me.security).toEqual([{ bearer: [] }]);
       expect(me.responses['200'].content['application/json'].schema.properties).toHaveProperty('email');
       expect(doc.components.securitySchemes).toHaveProperty('bearer');

@@ -1,9 +1,12 @@
 import { z } from 'zod';
+import { requiredError } from '../common/zod.js';
 
 export const loginSchema = z.object({
-  email: z.email().meta({ description: 'Email cadastrado', example: 'ana@exemplo.com' }),
+  email: z
+    .email({ error: requiredError })
+    .meta({ description: 'Email cadastrado', example: 'ana@exemplo.com' }),
   password: z
-    .string()
+    .string({ error: requiredError })
     .min(1)
     .max(128)
     .meta({ description: 'Senha do usuário', example: 'segredo123' }),
