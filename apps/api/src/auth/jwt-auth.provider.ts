@@ -22,7 +22,8 @@ export class JwtAuth extends JwtBearerProvider<User> {
     registry.registerProvider(this, { order: 1 });
   }
 
-  protected validate({ sub }: JwtClaims): User | null {
-    return (sub && this.usersService.findById(sub)) || null;
+  protected async validate({ sub }: JwtClaims): Promise<User | null> {
+    const user = sub ? await this.usersService.findById(sub) : undefined;
+    return user ?? null;
   }
 }

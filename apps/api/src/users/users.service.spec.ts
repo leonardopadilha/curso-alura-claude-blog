@@ -1,49 +1,52 @@
 import { ConflictException } from '@nestjs/common';
 import { PasswordHasher } from '@nestjs/authentication';
+import { vi } from 'vitest';
+import type { Database } from '../db/database.js';
 import { UsersService } from './users.service.js';
 
-describe('UsersService', () => {
-  let service: UsersService;
+/** Mínimo do query builder usado por `create`: insert().values().returning(). */
+function createDbMock(returning: () => Promise<unknown[]>) {
+  const values = vi.fn(() => ({ returning }));
+  const db = { insert: vi.fn(() => ({ values })) };
+  return { db: db as unknown as Database, values };
+}
 
-  beforeEach(() => {
-    // Hasher barato: o padrão (scrypt N=2^17) deixaria a suíte lenta.
-    service = new UsersService(new PasswordHasher({ logN: 10 }));
+const ana = { name: 'Ana Souza', email: '  Ana@Exemplo.COM ', password: 'segredo123' };
+
+describe('UsersService.create', () => {
+  // Hasher barato: o padrão (scrypt N=2^17) deixaria a suíte lenta.
+  const hasher = new PasswordHasher({ logN: 10 });
+
+  it('stores the normalized email and a password hash, never the password', async () => {
+    const row = { id: 'id-1' };
+    const { db, values } = createDbMock(async () => [row]);
+
+    const user = await new UsersService(db, hasher).create(ana);
+
+    expect(user).toBe(row);
+    expect(values).toHaveBeenCalledWith({
+      name: 'Ana Souza',
+      email: 'ana@exemplo.com',
+      passwordHash: expect.stringMatching(/^\$scrypt\$/),
+    });
+    expect(JSON.stringify(values.mock.calls)).not.toContain('segredo123');
   });
 
-  const ana = { name: 'Ana Souza', email: 'ana@exemplo.com', password: 'segredo123' };
+  it.each([
+    ['the driver error itself', { code: '23505' }],
+    ['the driver error wrapped by Drizzle (error.cause)', { cause: { code: '23505' } }],
+  ])('turns a unique violation into 409 (%s)', async (_label, error) => {
+    const { db } = createDbMock(() => Promise.reject(error));
 
-  it('creates a user with an id and stores a hash instead of the password', async () => {
-    const user = await service.create(ana);
-
-    expect(user.id).toEqual(expect.any(String));
-    expect(user).toMatchObject({ name: 'Ana Souza', email: 'ana@exemplo.com' });
-    expect(user.passwordHash).not.toContain(ana.password);
-    expect(user.passwordHash).toMatch(/^\$scrypt\$/);
+    await expect(new UsersService(db, hasher).create(ana)).rejects.toBeInstanceOf(
+      ConflictException,
+    );
   });
 
-  it('normalizes the email to lowercase', async () => {
-    const user = await service.create({ ...ana, email: '  Ana@Exemplo.COM ' });
-    expect(user.email).toBe('ana@exemplo.com');
-  });
+  it('does not swallow other database errors', async () => {
+    const failure = { code: '08006', message: 'connection failure' };
+    const { db } = createDbMock(() => Promise.reject(failure));
 
-  it('rejects a duplicated email regardless of case', async () => {
-    await service.create(ana);
-    await expect(
-      service.create({ ...ana, email: 'ANA@exemplo.com' }),
-    ).rejects.toBeInstanceOf(ConflictException);
-  });
-
-  it('allows only one of two concurrent registrations with the same email', async () => {
-    const results = await Promise.allSettled([service.create(ana), service.create(ana)]);
-    expect(results.filter((result) => result.status === 'fulfilled')).toHaveLength(1);
-    expect(results.filter((result) => result.status === 'rejected')).toHaveLength(1);
-  });
-
-  it('finds users by id and by email', async () => {
-    const user = await service.create(ana);
-    expect(service.findById(user.id)).toBe(user);
-    expect(service.findByEmail('ANA@exemplo.com')).toBe(user);
-    expect(service.findById('inexistente')).toBeUndefined();
-    expect(service.findByEmail('outra@exemplo.com')).toBeUndefined();
+    await expect(new UsersService(db, hasher).create(ana)).rejects.toBe(failure);
   });
 });

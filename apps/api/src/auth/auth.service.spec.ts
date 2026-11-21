@@ -10,10 +10,11 @@ const user: User = {
   name: 'Ana Souza',
   email: 'ana@exemplo.com',
   passwordHash: 'hash',
+  createdAt: new Date('2026-01-01T00:00:00Z'),
 };
 
 function setup({ found = true, passwordMatches = true } = {}) {
-  const usersService = { findByEmail: vi.fn(() => (found ? user : undefined)) };
+  const usersService = { findByEmail: vi.fn(async () => (found ? user : undefined)) };
   const passwordHasher = { verify: vi.fn(async () => passwordMatches) };
   const tokenService = {
     issue: vi.fn(async () => ({ accessToken: 'jwt', expiresIn: 900 })),

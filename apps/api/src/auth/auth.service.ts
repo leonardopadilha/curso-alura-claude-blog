@@ -12,7 +12,7 @@ export class AuthService {
   ) {}
 
   async login({ email, password }: LoginRequest): Promise<TokenResponse> {
-    const user = this.usersService.findByEmail(email);
+    const user = await this.usersService.findByEmail(email);
 
     // Com usuário inexistente o `verify` confere um hash falso: a resposta
     // demora o mesmo e não revela quais emails estão cadastrados.

@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 pnpm workspace monorepo (`apps/*`) with two independent apps:
 
-- `apps/api` — NestJS 12 backend (ESM, Vitest, oxlint with type-aware rules, Prettier). Has `users` and `auth` modules (sign-up, login with JWT, current user) backed by an in-memory array; listens on `PORT` or 3000, routes under `/v1`, Swagger UI at `/docs`.
+- `apps/api` — NestJS 12 backend (ESM, Vitest, oxlint with type-aware rules, Prettier). Has `users` and `auth` modules (sign-up, login with JWT, current user) persisted in Postgres through Drizzle ORM; listens on `PORT` or 3000, routes under `/v1`, Swagger UI at `/docs`.
 - `apps/web` — React 19 + Vite 8 + TypeScript frontend (oxlint, Vitest). Has the login (`/login`) and signup (`/cadastro`) pages, built from the Figma design.
 
 There is no shared package and no wiring between web and api yet.
@@ -22,6 +22,10 @@ pnpm dev:web        # vite dev server
 pnpm dev:api        # nest start --watch
 pnpm build          # pnpm -r build (web: tsc -b && vite build; api: nest build)
 pnpm lint:web / pnpm lint:api
+pnpm db:up          # Postgres via docker-compose.yml (named volume keeps the data)
+pnpm db:down        # stop it (data stays; `docker compose down -v` wipes it)
+pnpm db:generate    # drizzle-kit: new SQL migration (apps/api/drizzle/) from src/db/schema.ts
+pnpm db:migrate     # apply pending migrations to DATABASE_URL
 pnpm test:api       # vitest run (unit, *.spec.ts)
 ```
 
@@ -45,9 +49,9 @@ Web tests: `pnpm test:web` (Vitest + Testing Library, `*.test.tsx` colocated wit
 - Vitest uses `globals: true` and resolves tsconfig path aliases via `resolve.tsconfigPaths`.
 - Telemetry via NestJS Observe is not yet registered in `app.module.ts` (see AGENTS.md).
 - **Auth** uses first-party `@nestjs/authentication`: `AuthenticationModule` registers a global guard, so every route requires a JWT unless marked `@Public()`. `JwtAuth` (a `JwtBearerProvider`) loads the user from the token; read it with `@CurrentUser()`. Only access tokens are issued (`refreshToken: false`, 15 min). `JWT_SECRET` (min. 32 bytes) is required in production; outside it a random per-process secret is used.
-- **Persistence is an in-memory array** inside `UsersService` (lost on restart; no ORM/database yet). Passwords are hashed with `PasswordHasher` (scrypt) and never leave the service: responses go through `toUserResponse`.
+- **Persistence is Postgres via Drizzle ORM** (`@nestjs/drizzle`, `pg` driver). Chosen over TypeORM, Sequelize, Prisma and MikroORM because it is ESM-native, defines the schema as plain TypeScript (no decorators or code generation, like the Zod/Standard Schema approach), keeps SQL visible, and has a first-party Nest package. The schema is `src/db/schema.ts`; every change needs `pnpm db:generate` and a committed migration in `apps/api/drizzle/`, applied with `pnpm db:migrate` (not run on app start). Inject the database with `@InjectDrizzle() db: Database`. Uniqueness (e.g. email) is enforced by the database and mapped to 409 (error code `23505`), not by a check-then-insert. `DATABASE_URL` is required in production; otherwise the docker compose database is used. Passwords are hashed with `PasswordHasher` (scrypt) and never leave the service: responses go through `toUserResponse`.
 - **Zod schemas are the single source of truth** for validation (`@Body({ schema })`) and OpenAPI: request/response schemas feed `@nestjs/swagger` (`standardSchema` on `@ApiXResponse`). Every endpoint needs its inputs and outputs documented that way. `setupApp()` (`app.setup.ts`) holds the global prefix, pipe and Swagger, and is shared by `main.ts` and the e2e tests.
-- E2E tests (`pnpm test:e2e`, `test/*.e2e-spec.ts`) use `setupApp` and override `PasswordHasher` with a cheap `new PasswordHasher({ logN: 10 })`.
+- E2E tests (`pnpm test:e2e`, `test/*.e2e-spec.ts`) need Postgres running (`pnpm db:up`). They use their own `code_connect_test` database (created and migrated by `test/global-setup.ts`; override with `TEST_DATABASE_URL`, the name must end in `_test` because tests delete data), `createTestApp()` (`setupApp` + a cheap `PasswordHasher({ logN: 10 })`) and `resetDatabase()` between tests. Unit tests (`pnpm test:api`) need no database: mock the Drizzle query chain.
 
 ## REST (apps/api)
 

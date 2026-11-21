@@ -1,10 +1,7 @@
-import { PasswordHasher } from '@nestjs/authentication';
 import type { INestApplication } from '@nestjs/common';
-import { Test } from '@nestjs/testing';
 import request from 'supertest';
 import type { App } from 'supertest/types.js';
-import { AppModule } from '../src/app.module.js';
-import { setupApp } from '../src/app.setup.js';
+import { createTestApp, resetDatabase } from './create-test-app.js';
 
 const ana = { name: 'Ana Souza', email: 'ana@exemplo.com', password: 'segredo123' };
 
@@ -12,15 +9,8 @@ describe('Users and auth (e2e)', () => {
   let app: INestApplication<App>;
 
   beforeEach(async () => {
-    const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
-      // Hasher barato nos testes (o padrão usa scrypt com N=2^17).
-      .overrideProvider(PasswordHasher)
-      .useValue(new PasswordHasher({ logN: 10 }))
-      .compile();
-
-    app = moduleRef.createNestApplication();
-    setupApp(app);
-    await app.init();
+    app = await createTestApp();
+    await resetDatabase(app);
   });
 
   afterEach(async () => {
@@ -145,6 +135,23 @@ describe('Users and auth (e2e)', () => {
         .get('/v1/users/me')
         .set('Authorization', `Bearer ${token.accessToken}x`)
         .expect(401);
+    });
+  });
+
+  describe('persistence', () => {
+    it('keeps the users after the application restarts', async () => {
+      const created = await register().expect(201);
+
+      // Reinício: a primeira instância é encerrada e uma nova sobe do zero.
+      await app.close();
+      app = await createTestApp();
+
+      const { body: token } = await login().expect(200);
+      const response = await request(app.getHttpServer())
+        .get('/v1/users/me')
+        .set('Authorization', `Bearer ${token.accessToken}`)
+        .expect(200);
+      expect(response.body.id).toBe(created.body.id);
     });
   });
 

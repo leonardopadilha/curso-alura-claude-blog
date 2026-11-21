@@ -1,0 +1,27 @@
+# Postgres local para desenvolvimento.
+#   pnpm db:up      sobe o banco em segundo plano
+#   pnpm db:down    para o container (os dados permanecem no volume)
+# Para apagar também os dados: docker compose down -v
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: code-connect-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-code_connect}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-code_connect}
+      POSTGRES_DB: ${POSTGRES_DB:-code_connect}
+    ports:
+      # Só acessível pela própria máquina.
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      # Volume nomeado: os dados sobrevivem a `down`, `restart` e recriação do container.
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres_data:

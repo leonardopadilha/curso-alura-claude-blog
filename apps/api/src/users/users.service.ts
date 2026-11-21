@@ -1,46 +1,62 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { PasswordHasher } from '@nestjs/authentication';
-import { randomUUID } from 'node:crypto';
+import { InjectDrizzle } from '@nestjs/drizzle';
+import { eq } from 'drizzle-orm';
+import type { Database } from '../db/database.js';
+import { users } from '../db/schema.js';
 import type { User } from './user.js';
 import type { CreateUserRequest } from './user.schema.js';
 
-/** Persistência provisória: um array em memória, perdido a cada reinício. */
+/** Código do Postgres para violação de índice único. */
+const UNIQUE_VIOLATION = '23505';
+
 @Injectable()
 export class UsersService {
-  private readonly users: User[] = [];
-
-  constructor(private readonly passwordHasher: PasswordHasher) {}
+  constructor(
+    @InjectDrizzle() private readonly db: Database,
+    private readonly passwordHasher: PasswordHasher,
+  ) {}
 
   async create({ name, email, password }: CreateUserRequest): Promise<User> {
-    const normalizedEmail = normalizeEmail(email);
-    // O hash é assíncrono: calculá-lo antes de checar e inserir mantém a
-    // checagem de duplicidade e o `push` na mesma etapa síncrona (sem corrida).
     const passwordHash = await this.passwordHasher.hash(password);
 
-    if (this.findByEmail(normalizedEmail)) {
-      throw new ConflictException('Email already registered');
+    try {
+      const [user] = await this.db
+        .insert(users)
+        .values({ name, email: normalizeEmail(email), passwordHash })
+        .returning();
+      return user;
+    } catch (error) {
+      // A unicidade é garantida pelo índice do banco: vale também para
+      // cadastros simultâneos, que uma checagem antes do insert não pegaria.
+      if (isUniqueViolation(error)) {
+        throw new ConflictException('Email already registered');
+      }
+      throw error;
     }
+  }
 
-    const user: User = {
-      id: randomUUID(),
-      name,
-      email: normalizedEmail,
-      passwordHash,
-    };
-    this.users.push(user);
+  async findById(id: string): Promise<User | undefined> {
+    const [user] = await this.db.select().from(users).where(eq(users.id, id)).limit(1);
     return user;
   }
 
-  findById(id: string): User | undefined {
-    return this.users.find((user) => user.id === id);
-  }
-
-  findByEmail(email: string): User | undefined {
-    const normalizedEmail = normalizeEmail(email);
-    return this.users.find((user) => user.email === normalizedEmail);
+  async findByEmail(email: string): Promise<User | undefined> {
+    const [user] = await this.db
+      .select()
+      .from(users)
+      .where(eq(users.email, normalizeEmail(email)))
+      .limit(1);
+    return user;
   }
 }
 
 function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
+}
+
+/** O Drizzle embrulha o erro do driver em `error.cause`; cobre os dois formatos. */
+function isUniqueViolation(error: unknown): boolean {
+  const { code, cause } = error as { code?: unknown; cause?: { code?: unknown } };
+  return code === UNIQUE_VIOLATION || cause?.code === UNIQUE_VIOLATION;
 }
