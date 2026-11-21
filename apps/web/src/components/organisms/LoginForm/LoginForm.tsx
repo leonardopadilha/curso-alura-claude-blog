@@ -7,23 +7,25 @@ import { AuthFormHeader } from '../../molecules/AuthFormHeader/AuthFormHeader'
 import { FormField } from '../../molecules/FormField/FormField'
 
 export type LoginValues = {
-  identifier: string
+  email: string
   password: string
   remember: boolean
 }
 
 type LoginFormProps = {
   onSubmit: (values: LoginValues) => void
+  error?: string
+  submitting?: boolean
 }
 
-export function LoginForm({ onSubmit }: LoginFormProps) {
-  const [identifier, setIdentifier] = useState('')
+export function LoginForm({ onSubmit, error, submitting = false }: LoginFormProps) {
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [remember, setRemember] = useState(false)
 
   function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault()
-    onSubmit({ identifier, password, remember })
+    onSubmit({ email, password, remember })
   }
 
   return (
@@ -33,13 +35,14 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
 
         <div className="flex flex-col gap-4">
           <FormField
-            label="Email ou usuário"
-            name="identifier"
-            placeholder="usuario123"
-            autoComplete="username"
+            label="Email"
+            name="email"
+            type="email"
+            placeholder="Digite seu email"
+            autoComplete="email"
             required
-            value={identifier}
-            onChange={(e) => setIdentifier(e.target.value)}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
           />
           <div className="flex flex-col gap-2">
             <FormField
@@ -64,8 +67,18 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
         </div>
       </div>
 
-      <Button type="submit" icon={<ArrowRightIcon className="size-4.5" />}>
-        Login
+      {error && (
+        <p role="alert" className="text-base text-erro">
+          {error}
+        </p>
+      )}
+
+      <Button
+        type="submit"
+        disabled={submitting}
+        icon={<ArrowRightIcon className="size-4.5" />}
+      >
+        {submitting ? 'Entrando…' : 'Login'}
       </Button>
     </form>
   )

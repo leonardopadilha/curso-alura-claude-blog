@@ -9,7 +9,10 @@ describe('App', () => {
         <App />
       </MemoryRouter>,
     )
-    expect(await screen.findByRole('heading', { name: 'Login' })).toBeInTheDocument()
+    // Primeira rota lazy do arquivo: o import frio (agora com axios) passa de 1s.
+    expect(
+      await screen.findByRole('heading', { name: 'Login' }, { timeout: 5000 }),
+    ).toBeInTheDocument()
   })
 
   it('renders the signup page on /cadastro', async () => {

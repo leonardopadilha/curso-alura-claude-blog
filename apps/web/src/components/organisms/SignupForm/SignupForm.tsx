@@ -14,9 +14,11 @@ export type SignupValues = {
 
 type SignupFormProps = {
   onSubmit: (values: SignupValues) => void
+  error?: string
+  submitting?: boolean
 }
 
-export function SignupForm({ onSubmit }: SignupFormProps) {
+export function SignupForm({ onSubmit, error, submitting = false }: SignupFormProps) {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -60,6 +62,7 @@ export function SignupForm({ onSubmit }: SignupFormProps) {
               placeholder="******"
               autoComplete="new-password"
               required
+              minLength={8}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
@@ -72,8 +75,18 @@ export function SignupForm({ onSubmit }: SignupFormProps) {
         </div>
       </div>
 
-      <Button type="submit" icon={<ArrowRightIcon className="size-4.5" />}>
-        Cadastrar
+      {error && (
+        <p role="alert" className="text-base text-erro">
+          {error}
+        </p>
+      )}
+
+      <Button
+        type="submit"
+        disabled={submitting}
+        icon={<ArrowRightIcon className="size-4.5" />}
+      >
+        {submitting ? 'Cadastrando…' : 'Cadastrar'}
       </Button>
     </form>
   )

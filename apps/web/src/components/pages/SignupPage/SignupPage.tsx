@@ -1,13 +1,35 @@
+import { useState } from 'react'
+import { useNavigate } from 'react-router'
 import bannerCadastro from '../../../assets/banner-cadastro.jpg'
+import { getApiErrorMessage } from '../../../services/api'
+import { login, signup } from '../../../services/auth'
+import { setToken } from '../../../services/tokenStorage'
 import { LoginIcon } from '../../atoms/icons/icons'
 import { PageMeta } from '../../atoms/PageMeta/PageMeta'
 import { AuthSwitchPrompt } from '../../molecules/AuthSwitchPrompt/AuthSwitchPrompt'
-import { SignupForm } from '../../organisms/SignupForm/SignupForm'
+import { SignupForm, type SignupValues } from '../../organisms/SignupForm/SignupForm'
 import { SocialLogin } from '../../organisms/SocialLogin/SocialLogin'
 import { AuthTemplate } from '../../templates/AuthTemplate/AuthTemplate'
 
 export function SignupPage() {
-  // TODO: integrar com a API quando o endpoint de cadastro existir.
+  const navigate = useNavigate()
+  const [error, setError] = useState<string>()
+  const [submitting, setSubmitting] = useState(false)
+
+  async function handleSubmit({ name, email, password, remember }: SignupValues) {
+    setError(undefined)
+    setSubmitting(true)
+    try {
+      await signup({ name, email, password })
+      const { accessToken } = await login({ email, password })
+      setToken(accessToken, remember)
+      await navigate('/inicio')
+    } catch (e) {
+      setError(getApiErrorMessage(e))
+      setSubmitting(false)
+    }
+  }
+
   return (
     <>
       <PageMeta
@@ -34,7 +56,7 @@ export function SignupPage() {
           </>
         }
       >
-        <SignupForm onSubmit={() => {}} />
+        <SignupForm onSubmit={handleSubmit} error={error} submitting={submitting} />
       </AuthTemplate>
     </>
   )

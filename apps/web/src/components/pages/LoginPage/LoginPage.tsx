@@ -1,13 +1,34 @@
+import { useState } from 'react'
+import { useNavigate } from 'react-router'
 import bannerLogin from '../../../assets/banner-login.jpg'
+import { getApiErrorMessage } from '../../../services/api'
+import { login } from '../../../services/auth'
+import { setToken } from '../../../services/tokenStorage'
 import { ClipboardIcon } from '../../atoms/icons/icons'
 import { PageMeta } from '../../atoms/PageMeta/PageMeta'
 import { AuthSwitchPrompt } from '../../molecules/AuthSwitchPrompt/AuthSwitchPrompt'
-import { LoginForm } from '../../organisms/LoginForm/LoginForm'
+import { LoginForm, type LoginValues } from '../../organisms/LoginForm/LoginForm'
 import { SocialLogin } from '../../organisms/SocialLogin/SocialLogin'
 import { AuthTemplate } from '../../templates/AuthTemplate/AuthTemplate'
 
 export function LoginPage() {
-  // TODO: integrar com a API quando o endpoint de autenticação existir.
+  const navigate = useNavigate()
+  const [error, setError] = useState<string>()
+  const [submitting, setSubmitting] = useState(false)
+
+  async function handleSubmit({ email, password, remember }: LoginValues) {
+    setError(undefined)
+    setSubmitting(true)
+    try {
+      const { accessToken } = await login({ email, password })
+      setToken(accessToken, remember)
+      await navigate('/inicio')
+    } catch (e) {
+      setError(getApiErrorMessage(e))
+      setSubmitting(false)
+    }
+  }
+
   return (
     <>
       <PageMeta
@@ -33,7 +54,7 @@ export function LoginPage() {
           </>
         }
       >
-        <LoginForm onSubmit={() => {}} />
+        <LoginForm onSubmit={handleSubmit} error={error} submitting={submitting} />
       </AuthTemplate>
     </>
   )
