@@ -49,7 +49,10 @@ describe('getApiErrorMessage', () => {
   it.each([
     [400, 'Verifique os dados informados.'],
     [401, 'Email ou senha incorretos.'],
+    [404, 'Não encontramos o que você procura.'],
     [409, 'Já existe uma conta com esse email.'],
+    [413, 'A imagem deve ter até 2 MB.'],
+    [415, 'Use uma imagem PNG, JPEG ou WebP.'],
     [500, 'Ocorreu um erro inesperado. Tente novamente.'],
   ])('maps status %i', (status, message) => {
     expect(getApiErrorMessage(httpError(status))).toBe(message)

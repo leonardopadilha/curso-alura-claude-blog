@@ -1,4 +1,5 @@
-import { clearToken, getToken, setToken } from './tokenStorage'
+import { vi } from 'vitest'
+import { clearToken, getToken, setToken, subscribeToken } from './tokenStorage'
 
 describe('tokenStorage', () => {
   beforeEach(() => {
@@ -30,5 +31,18 @@ describe('tokenStorage', () => {
     expect(getToken()).toBe('new')
     clearToken()
     expect(getToken()).toBeNull()
+  })
+
+  it('notifies subscribers when the token changes, until they unsubscribe', () => {
+    const listener = vi.fn()
+    const unsubscribe = subscribeToken(listener)
+
+    setToken('abc', true)
+    clearToken()
+    expect(listener).toHaveBeenCalledTimes(3) // setToken limpa e grava; clearToken avisa de novo
+
+    unsubscribe()
+    setToken('def', true)
+    expect(listener).toHaveBeenCalledTimes(3)
   })
 })

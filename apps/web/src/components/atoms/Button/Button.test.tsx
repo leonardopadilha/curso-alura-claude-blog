@@ -17,6 +17,16 @@ describe('Button', () => {
     expect(screen.getByRole('button')).toHaveAttribute('type', 'submit')
   })
 
+  it('is solid by default and supports the outline and neutral variants', () => {
+    const { rerender } = render(<Button>Ok</Button>)
+    expect(screen.getByRole('button')).toHaveClass('bg-verde-destaque')
+    rerender(<Button variant="outline">Ok</Button>)
+    expect(screen.getByRole('button')).toHaveClass('border-verde-destaque')
+    expect(screen.getByRole('button')).not.toHaveClass('bg-verde-destaque')
+    rerender(<Button variant="neutral">Ok</Button>)
+    expect(screen.getByRole('button')).toHaveClass('border-cinza-medio')
+  })
+
   it('calls onClick when clicked', async () => {
     const onClick = vi.fn()
     render(<Button onClick={onClick}>Ok</Button>)

@@ -8,12 +8,13 @@ import { LoginPage } from './LoginPage'
 
 vi.mock('../../../services/auth', () => ({ login: vi.fn() }))
 
-function renderPage() {
+function renderPage(initialEntry: string | { pathname: string; state: unknown } = '/login') {
   return render(
-    <MemoryRouter initialEntries={['/login']}>
+    <MemoryRouter initialEntries={[initialEntry]}>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/inicio" element={<p>Página inicial</p>} />
+        <Route path="/" element={<p>Página inicial</p>} />
+        <Route path="/publicar" element={<p>Tela de publicação</p>} />
       </Routes>
     </MemoryRouter>,
   )
@@ -42,7 +43,7 @@ describe('LoginPage', () => {
     expect(screen.getByRole('img')).toBeInTheDocument()
   })
 
-  it('logs in, stores the token and goes to /inicio', async () => {
+  it('logs in, stores the token and goes to the feed', async () => {
     vi.mocked(login).mockResolvedValue({
       accessToken: 'jwt-123',
       tokenType: 'Bearer',
@@ -57,6 +58,18 @@ describe('LoginPage', () => {
       password: 'segredo123',
     })
     expect(getToken()).toBe('jwt-123')
+  })
+
+  it('goes back to the page the user came from after logging in', async () => {
+    vi.mocked(login).mockResolvedValue({
+      accessToken: 'jwt-123',
+      tokenType: 'Bearer',
+      expiresIn: 900,
+    })
+    renderPage({ pathname: '/login', state: { from: '/publicar' } })
+    await fillAndSubmit()
+
+    expect(await screen.findByText('Tela de publicação')).toBeInTheDocument()
   })
 
   it('shows an error and stays on the page when the login fails', async () => {

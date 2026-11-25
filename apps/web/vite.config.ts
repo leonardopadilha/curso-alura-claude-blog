@@ -7,8 +7,8 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
-    // A API não habilita CORS: em dev, /v1 é repassado para o backend.
-    proxy: { '/v1': 'http://localhost:3000' },
+    // A API não habilita CORS: em dev, /v1 (e as imagens em /uploads) vão para o backend.
+    proxy: { '/v1': 'http://localhost:3000', '/uploads': 'http://localhost:3000' },
   },
   test: {
     globals: true,

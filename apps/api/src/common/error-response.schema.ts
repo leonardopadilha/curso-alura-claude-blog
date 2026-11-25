@@ -27,3 +27,15 @@ export const badRequestSchema = errorResponseSchema(400, 'Bad Request', [
 ]);
 export const unauthorizedSchema = errorResponseSchema(401, 'Unauthorized', 'Unauthorized');
 export const conflictSchema = errorResponseSchema(409, 'Conflict', 'Email already registered');
+export const notFoundSchema = errorResponseSchema(404, 'Not Found', 'Post not found');
+export const unprocessableSchema = errorResponseSchema(
+  422,
+  'Unprocessable Entity',
+  'Parent comment not found in this post',
+);
+export const payloadTooLargeSchema = errorResponseSchema(413, 'Payload Too Large', 'File too large');
+export const unsupportedMediaTypeSchema = errorResponseSchema(
+  415,
+  'Unsupported Media Type',
+  'Only PNG, JPEG and WebP images are accepted',
+);

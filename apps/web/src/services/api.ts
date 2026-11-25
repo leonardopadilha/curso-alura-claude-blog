@@ -22,8 +22,14 @@ export function getApiErrorMessage(error: unknown): string {
       return 'Verifique os dados informados.'
     case 401:
       return 'Email ou senha incorretos.'
+    case 404:
+      return 'Não encontramos o que você procura.'
     case 409:
       return 'Já existe uma conta com esse email.'
+    case 413:
+      return 'A imagem deve ter até 2 MB.'
+    case 415:
+      return 'Use uma imagem PNG, JPEG ou WebP.'
     default:
       return 'Ocorreu um erro inesperado. Tente novamente.'
   }

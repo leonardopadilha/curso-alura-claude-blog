@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router'
+import { useLocation, useNavigate } from 'react-router'
 import bannerCadastro from '../../../assets/banner-cadastro.jpg'
+import { getRedirectTarget } from '../../../lib/redirect'
 import { getApiErrorMessage } from '../../../services/api'
 import { login, signup } from '../../../services/auth'
 import { setToken } from '../../../services/tokenStorage'
@@ -13,6 +14,7 @@ import { AuthTemplate } from '../../templates/AuthTemplate/AuthTemplate'
 
 export function SignupPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [error, setError] = useState<string>()
   const [submitting, setSubmitting] = useState(false)
 
@@ -23,7 +25,7 @@ export function SignupPage() {
       await signup({ name, email, password })
       const { accessToken } = await login({ email, password })
       setToken(accessToken, remember)
-      await navigate('/inicio')
+      await navigate(getRedirectTarget(location.state), { replace: true })
     } catch (e) {
       setError(getApiErrorMessage(e))
       setSubmitting(false)

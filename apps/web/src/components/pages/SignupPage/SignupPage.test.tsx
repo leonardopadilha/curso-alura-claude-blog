@@ -13,7 +13,7 @@ function renderPage() {
     <MemoryRouter initialEntries={['/cadastro']}>
       <Routes>
         <Route path="/cadastro" element={<SignupPage />} />
-        <Route path="/inicio" element={<p>Página inicial</p>} />
+        <Route path="/" element={<p>Página inicial</p>} />
       </Routes>
     </MemoryRouter>,
   )
@@ -45,7 +45,7 @@ describe('SignupPage', () => {
     expect(screen.getByRole('img')).toBeInTheDocument()
   })
 
-  it('signs up, logs in automatically and goes to /inicio', async () => {
+  it('signs up, logs in automatically and goes to the feed', async () => {
     vi.mocked(signup).mockResolvedValue({
       id: '1',
       name: 'Ana Souza',

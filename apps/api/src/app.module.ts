@@ -10,6 +10,8 @@ import {
   JWT_ISSUER,
   resolveJwtSecret,
 } from './config/jwt.config.js';
+import { PostsModule } from './posts/posts.module.js';
+import { UploadsModule } from './uploads/uploads.module.js';
 import { UsersModule } from './users/users.module.js';
 
 @Module({
@@ -33,6 +35,8 @@ import { UsersModule } from './users/users.module.js';
     }),
     UsersModule,
     AuthModule,
+    PostsModule,
+    UploadsModule,
   ],
 })
 export class AppModule {}

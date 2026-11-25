@@ -1,5 +1,21 @@
 const KEY = 'code-connect:access-token'
 
+const listeners = new Set<() => void>()
+
+function notify(): void {
+  listeners.forEach((listener) => listener())
+}
+
+/** Avisa quando o token muda (login/logout aqui ou em outra aba). Usado por `useSession`. */
+export function subscribeToken(listener: () => void): () => void {
+  listeners.add(listener)
+  window.addEventListener('storage', listener)
+  return () => {
+    listeners.delete(listener)
+    window.removeEventListener('storage', listener)
+  }
+}
+
 function read(storage: () => Storage): string | null {
   try {
     return storage().getItem(KEY)
@@ -20,6 +36,7 @@ export function setToken(token: string, remember: boolean): void {
   } catch {
     // Armazenamento indisponível: a sessão vale só até recarregar a página.
   }
+  notify()
 }
 
 export function clearToken(): void {
@@ -30,4 +47,5 @@ export function clearToken(): void {
       // ignorado
     }
   }
+  notify()
 }
