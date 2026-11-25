@@ -167,14 +167,4 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           model: claude-sonnet-5-5
           direct_prompt: |
-            Revise este Pull Request seguindo as convenções do projeto (CLAUDE.md).
-            Foque em:
-            - Qualidade e clareza do código
-            - Possíveis bugs ou problemas de lógica
-            - Violações das convenções da API (REST, status codes, Zod schemas)
-            - Aderência às convenções do projeto (Atomic Design, REST, Conventional Commits)
-            - Segurança (OWASP top 10, XSS, SQL injection, secrets expostos)
-            - Cobertura de testes (todo componente deve ter teste co-localizado)
-            - Testes ausentes para componentes ou endpoints novos
-            - Performance e boas práticas do React/NestJS
-            Seja direto e objetivo. Poste os comentários inline no diff quando possível.
+            Revise este PR de forma concisa. Liste apenas problemas reais: bugs, violações de convenções do CLAUDE.md, segurança ou testes ausentes. Se não houver problemas, diga isso em uma linha. Sem elogios, sem explicações longas.
