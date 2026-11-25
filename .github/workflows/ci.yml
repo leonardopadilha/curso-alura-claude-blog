@@ -165,6 +165,7 @@ jobs:
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          model: claude-sonnet-5-5
           direct_prompt: |
             Revise este Pull Request seguindo as convenções do projeto (CLAUDE.md).
             Foque em:
