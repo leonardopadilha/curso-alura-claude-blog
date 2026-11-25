@@ -149,7 +149,6 @@ jobs:
   # ─── Claude Code Review ──────────────────────────────────────────────────────
   claude-review:
     name: Claude Code Review
-    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     needs: [lint, test-unit]
     permissions:
