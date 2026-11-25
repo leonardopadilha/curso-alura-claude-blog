@@ -8,3 +8,6 @@ dist
 .idea
 apps/web/e2e/.results
 apps/web/e2e/.report
+
+# Imagens enviadas pelos usuários (apps/api/uploads)
+/apps/api/uploads
