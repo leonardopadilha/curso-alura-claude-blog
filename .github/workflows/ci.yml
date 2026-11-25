@@ -16,7 +16,7 @@ env:
   PNPM_VERSION: '10'
 
 jobs:
-  # ─── Lint ────────────────────────────────────────────────────────────────────
+  # ─── 1. Lint ─────────────────────────────────────────────────────────────────
   lint:
     name: Lint
     runs-on: ubuntu-latest
@@ -41,7 +41,7 @@ jobs:
       - name: Lint Web
         run: pnpm lint:web
 
-  # ─── Unit tests ──────────────────────────────────────────────────────────────
+  # ─── 2. Unit tests ───────────────────────────────────────────────────────────
   test-unit:
     name: Unit Tests
     runs-on: ubuntu-latest
@@ -67,7 +67,7 @@ jobs:
       - name: Test Web
         run: pnpm test:web
 
-  # ─── E2E tests ───────────────────────────────────────────────────────────────
+  # ─── 3. E2E tests ────────────────────────────────────────────────────────────
   test-e2e:
     name: E2E Tests (API)
     runs-on: ubuntu-latest
@@ -111,7 +111,30 @@ jobs:
       - name: Run E2E tests
         run: pnpm --filter api test:e2e
 
-  # ─── Build ───────────────────────────────────────────────────────────────────
+  # ─── 4. Claude Code Review (somente em PRs) ──────────────────────────────────
+  claude-review:
+    name: Claude Code Review
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    needs: [test-e2e]
+    permissions:
+      contents: read
+      pull-requests: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+
+      - uses: anthropics/claude-code-action@beta
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          model: claude-sonnet-5-5
+          direct_prompt: |
+            Revise este PR de forma concisa. Liste apenas problemas reais: bugs, violações de convenções do CLAUDE.md, segurança ou testes ausentes. Se não houver problemas, diga isso em uma linha. Sem elogios, sem explicações longas.
+
+  # ─── 5. Build ────────────────────────────────────────────────────────────────
   build:
     name: Build
     runs-on: ubuntu-latest
@@ -151,26 +174,3 @@ jobs:
           name: api-dist
           path: apps/api/dist
           retention-days: 7
-
-  # ─── Claude Code Review ──────────────────────────────────────────────────────
-  claude-review:
-    name: Claude Code Review
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    needs: [test-e2e]
-    permissions:
-      contents: read
-      pull-requests: write
-      id-token: write
-    steps:
-      - uses: actions/checkout@v5
-        with:
-          fetch-depth: 1
-
-      - uses: anthropics/claude-code-action@beta
-        with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          model: claude-sonnet-5-5
-          direct_prompt: |
-            Revise este PR de forma concisa. Liste apenas problemas reais: bugs, violações de convenções do CLAUDE.md, segurança ou testes ausentes. Se não houver problemas, diga isso em uma linha. Sem elogios, sem explicações longas.
